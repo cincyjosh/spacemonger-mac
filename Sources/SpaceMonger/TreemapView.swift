@@ -121,21 +121,33 @@ struct TreemapView: View {
     /// Moves the node's underlying file/folder to the Trash — the Mac
     /// equivalent of the original's SHFileOperation(FO_DELETE, FOF_ALLOWUNDO),
     /// which sent deletions to the Recycle Bin rather than deleting outright.
+    /// The actual move happens off the main actor: for a large folder or a
+    /// slow volume (external disk, network share), `trashItem` can take long
+    /// enough to freeze the UI if run synchronously on a button action.
+    /// Validation stays synchronous — it's just metadata lookups (`lstat`,
+    /// resource values), fast enough not to matter, and needs to run before
+    /// the confirmation dialog's answer is acted on regardless.
     private func delete(_ item: DisplayRect) {
         let url = fileURL(for: item.node)
         if let reason = validationFailureReason(for: item.node, at: url) {
             deleteError = reason
             return
         }
-        do {
-            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
-            item.node.removeFromParent()
-            if zoomedNode === item.node {
-                zoomedNode = item.node.parent ?? root
+        Task.detached(priority: .userInitiated) {
+            do {
+                try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                await MainActor.run {
+                    item.node.removeFromParent()
+                    if zoomedNode === item.node {
+                        zoomedNode = item.node.parent ?? root
+                    }
+                    refreshTick += 1
+                }
+            } catch {
+                await MainActor.run {
+                    deleteError = error.localizedDescription
+                }
             }
-            refreshTick += 1
-        } catch {
-            deleteError = error.localizedDescription
         }
     }
 

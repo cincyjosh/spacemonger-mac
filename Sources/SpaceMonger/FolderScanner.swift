@@ -9,45 +9,32 @@ struct ScanProgress {
     let foldersFound: Int
 }
 
-enum ScanError: Error {
-    case cancelled
-}
-
 /// Recursively walks a directory tree, mirroring CFolder::LoadFolder /
 /// LoadFolderInitial from the original: sizes are rounded up to the volume's
 /// allocation block size (the Mac analogue of Windows' cluster size), and
 /// symlinks / mount points are skipped rather than followed, so the scan
 /// can't loop or wander onto another volume.
-/// `@unchecked Sendable`: `cancel()` is called from the main actor while a
-/// scan runs on a background task, but that's the only cross-thread access —
-/// `isCancelled` is lock-protected (see below), and every other property is
-/// only touched from within a single scan's own call stack, since each scan
-/// now gets its own `FolderScanner` instance rather than sharing one.
+///
+/// Cancellation rides on the caller's own `Task` (`ContentView` tracks the
+/// scan as `scanTask` and calls `.cancel()` on it) rather than a custom
+/// cancel flag — `scanDirectory` periodically calls
+/// `Task.checkCancellation()`, which reads the currently-executing task's
+/// cancellation state and throws `CancellationError` if it's been
+/// cancelled. That's the same check whether called from sync or async code,
+/// as long as it's still running within that task's frame, so there's no
+/// lock needed here at all.
+///
+/// `@unchecked Sendable`: crosses from the main actor (created in
+/// `ContentView`) into a background `Task.detached`, but every property is
+/// only touched from within that one scan's own call stack — each scan gets
+/// its own `FolderScanner` instance rather than sharing one, so there's no
+/// actual concurrent access for the compiler to not be able to see.
 final class FolderScanner: @unchecked Sendable {
     private let fileManager = FileManager.default
     private var filesFound = 0
     private var foldersFound = 0
     private var lastProgressTime = Date.distantPast
     private let progressInterval: TimeInterval = 0.2
-    /// Cancellation has to be safe to set from the main thread (the Cancel
-    /// button) while the scan loop reads it from a background thread — a
-    /// plain `Bool` here is a data race (caught by the Swift 6 compiler's
-    /// concurrency checking). `os_unfair_lock` keeps this dependency-free
-    /// rather than pulling in swift-atomics for one flag.
-    private var isCancelledLock = os_unfair_lock()
-    private var _isCancelled = false
-    private var isCancelled: Bool {
-        get {
-            os_unfair_lock_lock(&isCancelledLock)
-            defer { os_unfair_lock_unlock(&isCancelledLock) }
-            return _isCancelled
-        }
-        set {
-            os_unfair_lock_lock(&isCancelledLock)
-            _isCancelled = newValue
-            os_unfair_lock_unlock(&isCancelledLock)
-        }
-    }
     /// The starting volume's device ID, used to detect when a directory is
     /// actually a mounted volume nested under the scan root (a cloud-sync
     /// mount like Google Drive or OneDrive, an external disk, a network
@@ -62,10 +49,6 @@ final class FolderScanner: @unchecked Sendable {
     /// contents.
     private(set) var inaccessibleDirectoryCount = 0
 
-    func cancel() {
-        isCancelled = true
-    }
-
     /// Scans `url` (a volume root or any directory) and returns its
     /// (unsorted) tree — call `finalize()` on the result once, after any
     /// additional nodes (e.g. the free-space marker) have been added, rather
@@ -75,7 +58,6 @@ final class FolderScanner: @unchecked Sendable {
     func scan(url: URL, onProgress: @escaping (ScanProgress) -> Void) throws -> FolderNode {
         filesFound = 0
         foldersFound = 0
-        isCancelled = false
         inaccessibleDirectoryCount = 0
         rootDeviceID = deviceID(for: url)
         let rootIdentity = lstatIdentity(for: url)
@@ -147,7 +129,7 @@ final class FolderScanner: @unchecked Sendable {
 
     private func scanDirectory(url: URL, into node: FolderNode, blockSize: UInt64,
                                 onProgress: @escaping (ScanProgress) -> Void) throws {
-        if isCancelled { throw ScanError.cancelled }
+        try Task.checkCancellation()
 
         let resourceKeys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .isAliasFileKey, .contentModificationDateKey]
         let contents: [URL]
@@ -165,7 +147,7 @@ final class FolderScanner: @unchecked Sendable {
         }
 
         for childURL in contents {
-            if isCancelled { throw ScanError.cancelled }
+            try Task.checkCancellation()
 
             guard let values = try? childURL.resourceValues(forKeys: Set(resourceKeys)) else { continue }
 

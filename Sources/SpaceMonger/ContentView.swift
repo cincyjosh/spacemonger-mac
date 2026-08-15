@@ -17,11 +17,10 @@ struct ContentView: View {
     @State private var scanRootURL: URL?
     @State private var layoutSettings = LayoutSettings()
     @State private var showAbout = false
-    /// The scanner backing whatever scan is currently running, so Cancel
-    /// targets the right one. A fresh `FolderScanner` is created per scan
-    /// rather than reused, since nothing about it is safe to share across
-    /// overlapping scans.
-    @State private var activeScanner: FolderScanner?
+    /// The running scan, owned as a real `Task` so Cancel and superseding it
+    /// (starting a new scan via Open/Reload) both just cancel this — the
+    /// scan itself checks `Task.checkCancellation()` periodically, so no
+    /// separate cancel flag on `FolderScanner` is needed.
     @State private var scanTask: Task<Void, Never>?
     /// Bumped every time a new scan starts; a scan's callbacks check this
     /// before touching `scanState` so a stale scan (superseded by Open or
@@ -140,7 +139,7 @@ struct ContentView: View {
                 Text(progress.currentPath).font(.caption).lineLimit(1).truncationMode(.middle)
                 Text("\(progress.filesFound) files, \(progress.foldersFound) folders")
                     .font(.caption).foregroundStyle(.secondary)
-                Button("Cancel") { activeScanner?.cancel() }
+                Button("Cancel") { scanTask?.cancel() }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -171,14 +170,12 @@ struct ContentView: View {
         // was already running — cancel it and bump the generation so its
         // callbacks become no-ops instead of racing the new one.
         scanTask?.cancel()
-        activeScanner?.cancel()
         scanGeneration += 1
         let generation = scanGeneration
 
         scanState = .scanning(ScanProgress(currentPath: url.path, filesFound: 0, foldersFound: 0))
 
         let newScanner = FolderScanner()
-        activeScanner = newScanner
 
         scanTask = Task.detached(priority: .userInitiated) {
             do {
@@ -198,19 +195,16 @@ struct ContentView: View {
                     scanState = .done(root, inaccessibleDirectoryCount: inaccessibleCount)
                     zoomedNode = root
                     scanRootURL = url
-                    activeScanner = nil
                 }
-            } catch is ScanError {
+            } catch is CancellationError {
                 await MainActor.run {
                     guard generation == scanGeneration else { return }
                     scanState = .idle
-                    activeScanner = nil
                 }
             } catch {
                 await MainActor.run {
                     guard generation == scanGeneration else { return }
                     scanState = .failed(error.localizedDescription)
-                    activeScanner = nil
                 }
             }
         }

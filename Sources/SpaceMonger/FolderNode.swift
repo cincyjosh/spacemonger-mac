@@ -77,7 +77,11 @@ final class FolderNode {
         parent.children.removeAll { $0 === self }
         var ancestor: FolderNode? = parent
         while let node = ancestor {
-            node.size -= size
+            // Saturating subtraction: the invariant (a child's size never
+            // exceeds its ancestors') always holds today by construction,
+            // but UInt64 underflow is an instant crash if that's ever wrong,
+            // so this costs nothing and removes that failure mode outright.
+            node.size = node.size > size ? node.size - size : 0
             ancestor = node.parent
         }
         self.parent = nil
