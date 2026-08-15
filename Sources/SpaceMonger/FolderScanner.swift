@@ -18,13 +18,36 @@ enum ScanError: Error {
 /// allocation block size (the Mac analogue of Windows' cluster size), and
 /// symlinks / mount points are skipped rather than followed, so the scan
 /// can't loop or wander onto another volume.
-final class FolderScanner {
+/// `@unchecked Sendable`: `cancel()` is called from the main actor while a
+/// scan runs on a background task, but that's the only cross-thread access —
+/// `isCancelled` is lock-protected (see below), and every other property is
+/// only touched from within a single scan's own call stack, since each scan
+/// now gets its own `FolderScanner` instance rather than sharing one.
+final class FolderScanner: @unchecked Sendable {
     private let fileManager = FileManager.default
     private var filesFound = 0
     private var foldersFound = 0
     private var lastProgressTime = Date.distantPast
     private let progressInterval: TimeInterval = 0.2
-    private var isCancelled = false
+    /// Cancellation has to be safe to set from the main thread (the Cancel
+    /// button) while the scan loop reads it from a background thread — a
+    /// plain `Bool` here is a data race (caught by the Swift 6 compiler's
+    /// concurrency checking). `os_unfair_lock` keeps this dependency-free
+    /// rather than pulling in swift-atomics for one flag.
+    private var isCancelledLock = os_unfair_lock()
+    private var _isCancelled = false
+    private var isCancelled: Bool {
+        get {
+            os_unfair_lock_lock(&isCancelledLock)
+            defer { os_unfair_lock_unlock(&isCancelledLock) }
+            return _isCancelled
+        }
+        set {
+            os_unfair_lock_lock(&isCancelledLock)
+            _isCancelled = newValue
+            os_unfair_lock_unlock(&isCancelledLock)
+        }
+    }
     /// The starting volume's device ID, used to detect when a directory is
     /// actually a mounted volume nested under the scan root (a cloud-sync
     /// mount like Google Drive or OneDrive, an external disk, a network
@@ -37,7 +60,10 @@ final class FolderScanner {
         isCancelled = true
     }
 
-    /// Scans `url` (a volume root or any directory) and returns its tree.
+    /// Scans `url` (a volume root or any directory) and returns its
+    /// (unsorted) tree — call `finalize()` on the result once, after any
+    /// additional nodes (e.g. the free-space marker) have been added, rather
+    /// than here, so the tree isn't sorted twice.
     /// `onProgress` is called on the calling thread's queue — callers running
     /// this on a background queue should hop back to the main actor themselves.
     func scan(url: URL, onProgress: @escaping (ScanProgress) -> Void) throws -> FolderNode {
@@ -50,7 +76,6 @@ final class FolderScanner {
         let root = FolderNode(name: url.lastPathComponent.isEmpty ? url.path : url.lastPathComponent,
                                size: 0, isDirectory: true)
         try scanDirectory(url: url, into: root, blockSize: blockSize, onProgress: onProgress)
-        root.finalize()
         return root
     }
 
@@ -81,8 +106,11 @@ final class FolderScanner {
 
     /// True if `url` is on a different volume than where the scan started —
     /// i.e. it's a mount point, not a real subfolder. Matches `find -xdev`.
+    /// Fails closed: if volume identity can't be established at all (`stat`
+    /// failure), the directory is treated as a boundary and skipped rather
+    /// than silently allowed through.
     private func crossesVolumeBoundary(_ url: URL) -> Bool {
-        guard let rootDeviceID, let dev = deviceID(for: url) else { return false }
+        guard let rootDeviceID, let dev = deviceID(for: url) else { return true }
         return dev != rootDeviceID
     }
 
@@ -151,10 +179,22 @@ final class FolderScanner {
     /// Adds a synthetic node representing unused space on the volume, so the
     /// treemap for a whole-volume scan shows free space alongside used space
     /// — same as the original's AddFile(..., "<<<<<<<<<<<<<<<<<<<<", freespace, ...).
+    /// Only applies to an actual volume-root scan: adding a whole volume's
+    /// free space to an ordinary subfolder would make that folder look
+    /// comparable in size to all the free space on the disk, which is
+    /// meaningless — an arbitrary folder isn't what's using (or not using)
+    /// that space.
     static func addFreeSpaceMarker(to root: FolderNode, volumeURL: URL) {
+        guard isVolumeRoot(volumeURL) else { return }
         guard let free = freeSpace(at: volumeURL), free > 0 else { return }
         let marker = FolderNode(name: "Free Space", size: free, isDirectory: false, isFreeSpaceMarker: true)
         root.addChild(marker)
+    }
+
+    static func isVolumeRoot(_ url: URL) -> Bool {
+        guard let values = try? url.resourceValues(forKeys: [.volumeURLKey]),
+              let volumeURL = values.volume else { return false }
+        return url.standardizedFileURL.path == volumeURL.standardizedFileURL.path
     }
 
     static func freeSpace(at url: URL) -> UInt64? {

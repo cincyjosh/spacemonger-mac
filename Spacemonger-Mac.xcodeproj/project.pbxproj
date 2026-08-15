@@ -11,18 +11,21 @@
 		5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */; };
 		746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */; };
 		9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */; };
+		90F886BC349E266DFADB9A58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0AAAFC90A538F885B2C648E8 /* Assets.xcassets */; };
 		9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A009A4B5D3503CC691F026 /* FolderNode.swift */; };
 		E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E43869A6AF322373E7B2CBB /* TreemapView.swift */; };
 		E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0AAAFC90A538F885B2C648E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E43869A6AF322373E7B2CBB /* TreemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapView.swift; sourceTree = "<group>"; };
 		2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxColors.swift; sourceTree = "<group>"; };
 		4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceMongerApp.swift; sourceTree = "<group>"; };
 		8890BB31A35B1D5386242766 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0A009A4B5D3503CC691F026 /* FolderNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderNode.swift; sourceTree = "<group>"; };
+		B562457784E06A3ADA4062F4 /* SpaceMonger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpaceMonger.entitlements; sourceTree = "<group>"; };
 		C06DC98C71F9D97E68401252 /* SpaceMonger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceMonger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayout.swift; sourceTree = "<group>"; };
 		F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
@@ -32,11 +35,13 @@
 		5E9713A4F6833173B873BF2D /* SpaceMonger */ = {
 			isa = PBXGroup;
 			children = (
+				0AAAFC90A538F885B2C648E8 /* Assets.xcassets */,
 				2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */,
 				4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */,
 				B0A009A4B5D3503CC691F026 /* FolderNode.swift */,
 				F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */,
 				8890BB31A35B1D5386242766 /* Info.plist */,
+				B562457784E06A3ADA4062F4 /* SpaceMonger.entitlements */,
 				7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */,
 				F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */,
 				0E43869A6AF322373E7B2CBB /* TreemapView.swift */,
@@ -69,6 +74,7 @@
 			buildConfigurationList = 8BC0EE827F87ED46FE7D3F9F /* Build configuration list for PBXNativeTarget "SpaceMonger" */;
 			buildPhases = (
 				32A7CBD5C4D4AF39EC67BBF4 /* Sources */,
+				2BD2B05F91C5BA7C0FB88379 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -114,6 +120,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		2BD2B05F91C5BA7C0FB88379 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90F886BC349E266DFADB9A58 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		32A7CBD5C4D4AF39EC67BBF4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -136,6 +153,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/SpaceMonger/SpaceMonger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -155,6 +173,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/SpaceMonger/SpaceMonger.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				ENABLE_HARDENED_RUNTIME = YES;

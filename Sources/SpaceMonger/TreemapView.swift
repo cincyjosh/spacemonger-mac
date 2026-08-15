@@ -1,4 +1,5 @@
 import SwiftUI
+import Darwin
 
 /// Renders the treemap for `root` and handles click-to-zoom, mirroring the
 /// original's double-click-to-zoom-in / right-click-to-zoom-out behavior
@@ -119,6 +120,10 @@ struct TreemapView: View {
     /// which sent deletions to the Recycle Bin rather than deleting outright.
     private func delete(_ item: DisplayRect) {
         let url = fileURL(for: item.node)
+        if let reason = validationFailureReason(for: item.node, at: url) {
+            deleteError = reason
+            return
+        }
         do {
             try FileManager.default.trashItem(at: url, resultingItemURL: nil)
             item.node.removeFromParent()
@@ -129,6 +134,47 @@ struct TreemapView: View {
         } catch {
             deleteError = error.localizedDescription
         }
+    }
+
+    /// Verifies the on-disk object still matches what was scanned, and that
+    /// deleting it can't reach outside the scanned root. Time passes between
+    /// scanning and clicking Delete — something could have been renamed,
+    /// replaced with a symlink, or swapped out from under an ancestor path
+    /// component in the meantime. Returns a user-facing reason the delete
+    /// should be refused, or nil if it's safe to proceed.
+    private func validationFailureReason(for node: FolderNode, at url: URL) -> String? {
+        // Reject if the leaf itself is now a symlink — trashing it could
+        // silently follow the link to somewhere never actually scanned.
+        // Checked with lstat (not `.isSymbolicLinkKey`, which some resource
+        // value lookups can resolve through) so the symlink itself is what's
+        // inspected, not whatever it points to.
+        var linkStat = stat()
+        let isSymlink = url.withUnsafeFileSystemRepresentation { rep -> Bool in
+            guard let rep, lstat(rep, &linkStat) == 0 else { return false }
+            return (linkStat.st_mode & S_IFMT) == S_IFLNK
+        }
+        if isSymlink {
+            return "\(node.name) has changed since it was scanned (it's now a symbolic link). Rescan and try again."
+        }
+
+        guard let values = try? url.resourceValues(forKeys: [.isDirectoryKey]),
+              let isDirectory = values.isDirectory else {
+            return "\(node.name) no longer exists at that location. Rescan and try again."
+        }
+        if isDirectory != node.isDirectory {
+            return "\(node.name) has changed since it was scanned. Rescan and try again."
+        }
+
+        // Resolve away any symlinked ancestor directories and confirm the
+        // real path is still inside the scanned root, not somewhere a
+        // swapped-out ancestor could have redirected it to.
+        let resolvedTarget = url.resolvingSymlinksInPath().standardizedFileURL.path
+        let resolvedRoot = rootURL.resolvingSymlinksInPath().standardizedFileURL.path
+        guard resolvedTarget == resolvedRoot || resolvedTarget.hasPrefix(resolvedRoot + "/") else {
+            return "\(node.name) is no longer inside the scanned folder. Rescan and try again."
+        }
+
+        return nil
     }
 
     /// Colors cycle starting one step past the header bar's red, so a

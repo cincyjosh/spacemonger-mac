@@ -11,9 +11,19 @@ struct ContentView: View {
     @State private var scanState: ScanState = .idle
     @State private var zoomedNode: FolderNode?
     @State private var scanRootURL: URL?
-    @State private var scanner = FolderScanner()
     @State private var layoutSettings = LayoutSettings()
     @State private var showAbout = false
+    /// The scanner backing whatever scan is currently running, so Cancel
+    /// targets the right one. A fresh `FolderScanner` is created per scan
+    /// rather than reused, since nothing about it is safe to share across
+    /// overlapping scans.
+    @State private var activeScanner: FolderScanner?
+    @State private var scanTask: Task<Void, Never>?
+    /// Bumped every time a new scan starts; a scan's callbacks check this
+    /// before touching `scanState` so a stale scan (superseded by Open or
+    /// Reload while it was still running) can't clobber a newer one's
+    /// results after the fact.
+    @State private var scanGeneration = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -116,7 +126,7 @@ struct ContentView: View {
                 Text(progress.currentPath).font(.caption).lineLimit(1).truncationMode(.middle)
                 Text("\(progress.filesFound) files, \(progress.foldersFound) folders")
                     .font(.caption).foregroundStyle(.secondary)
-                Button("Cancel") { scanner.cancel() }
+                Button("Cancel") { activeScanner?.cancel() }
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -143,13 +153,24 @@ struct ContentView: View {
     }
 
     private func startScan(url: URL) {
-        scanState = .scanning(ScanProgress(currentPath: url.path, filesFound: 0, foldersFound: 0))
-        let localScanner = scanner
+        // Starting a new scan (via Open or Reload) supersedes whatever scan
+        // was already running — cancel it and bump the generation so its
+        // callbacks become no-ops instead of racing the new one.
+        scanTask?.cancel()
+        activeScanner?.cancel()
+        scanGeneration += 1
+        let generation = scanGeneration
 
-        Task.detached(priority: .userInitiated) {
+        scanState = .scanning(ScanProgress(currentPath: url.path, filesFound: 0, foldersFound: 0))
+
+        let newScanner = FolderScanner()
+        activeScanner = newScanner
+
+        scanTask = Task.detached(priority: .userInitiated) {
             do {
-                let root = try localScanner.scan(url: url) { progress in
+                let root = try newScanner.scan(url: url) { progress in
                     Task { @MainActor in
+                        guard generation == scanGeneration else { return }
                         if case .scanning = scanState {
                             scanState = .scanning(progress)
                         }
@@ -158,14 +179,24 @@ struct ContentView: View {
                 FolderScanner.addFreeSpaceMarker(to: root, volumeURL: url)
                 root.finalize()
                 await MainActor.run {
+                    guard generation == scanGeneration else { return }
                     scanState = .done(root)
                     zoomedNode = root
                     scanRootURL = url
+                    activeScanner = nil
                 }
             } catch is ScanError {
-                await MainActor.run { scanState = .idle }
+                await MainActor.run {
+                    guard generation == scanGeneration else { return }
+                    scanState = .idle
+                    activeScanner = nil
+                }
             } catch {
-                await MainActor.run { scanState = .failed(error.localizedDescription) }
+                await MainActor.run {
+                    guard generation == scanGeneration else { return }
+                    scanState = .failed(error.localizedDescription)
+                    activeScanner = nil
+                }
             }
         }
     }
