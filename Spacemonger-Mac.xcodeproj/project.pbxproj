@@ -1,0 +1,316 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */; };
+		5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */; };
+		746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */; };
+		9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */; };
+		9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A009A4B5D3503CC691F026 /* FolderNode.swift */; };
+		E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E43869A6AF322373E7B2CBB /* TreemapView.swift */; };
+		E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0E43869A6AF322373E7B2CBB /* TreemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapView.swift; sourceTree = "<group>"; };
+		2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxColors.swift; sourceTree = "<group>"; };
+		4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceMongerApp.swift; sourceTree = "<group>"; };
+		8890BB31A35B1D5386242766 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B0A009A4B5D3503CC691F026 /* FolderNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderNode.swift; sourceTree = "<group>"; };
+		C06DC98C71F9D97E68401252 /* SpaceMonger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceMonger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayout.swift; sourceTree = "<group>"; };
+		F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		5E9713A4F6833173B873BF2D /* SpaceMonger */ = {
+			isa = PBXGroup;
+			children = (
+				2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */,
+				4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */,
+				B0A009A4B5D3503CC691F026 /* FolderNode.swift */,
+				F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */,
+				8890BB31A35B1D5386242766 /* Info.plist */,
+				7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */,
+				F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */,
+				0E43869A6AF322373E7B2CBB /* TreemapView.swift */,
+			);
+			name = SpaceMonger;
+			path = Sources/SpaceMonger;
+			sourceTree = "<group>";
+		};
+		C0FF7039EA3E937BF6E298D2 = {
+			isa = PBXGroup;
+			children = (
+				5E9713A4F6833173B873BF2D /* SpaceMonger */,
+				E8174B2AA46622195AC41639 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E8174B2AA46622195AC41639 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C06DC98C71F9D97E68401252 /* SpaceMonger.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		489DEAF6583434936B190137 /* SpaceMonger */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8BC0EE827F87ED46FE7D3F9F /* Build configuration list for PBXNativeTarget "SpaceMonger" */;
+			buildPhases = (
+				32A7CBD5C4D4AF39EC67BBF4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SpaceMonger;
+			packageProductDependencies = (
+			);
+			productName = SpaceMonger;
+			productReference = C06DC98C71F9D97E68401252 /* SpaceMonger.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E1BD5B61CFB2960DACC70CD1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					489DEAF6583434936B190137 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C9CDC97191D8E0AA8E7E8832 /* Build configuration list for PBXProject "Spacemonger-Mac" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C0FF7039EA3E937BF6E298D2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E8174B2AA46622195AC41639 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				489DEAF6583434936B190137 /* SpaceMonger */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		32A7CBD5C4D4AF39EC67BBF4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */,
+				5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */,
+				9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */,
+				1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */,
+				E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */,
+				9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */,
+				E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		58924367523D7C1DFE6285F1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Sources/SpaceMonger/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.spacemonger-mac.SpaceMonger";
+				PRODUCT_NAME = "Spacemonger-Mac";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		79081E893F4BFE315D730E6B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = Sources/SpaceMonger/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.spacemonger-mac.SpaceMonger";
+				PRODUCT_NAME = "Spacemonger-Mac";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		DA10D576360E47A15B2216D4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		DD5B3867EBDCC533EB9AA12C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8BC0EE827F87ED46FE7D3F9F /* Build configuration list for PBXNativeTarget "SpaceMonger" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				79081E893F4BFE315D730E6B /* Debug */,
+				58924367523D7C1DFE6285F1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C9CDC97191D8E0AA8E7E8832 /* Build configuration list for PBXProject "Spacemonger-Mac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA10D576360E47A15B2216D4 /* Debug */,
+				DD5B3867EBDCC533EB9AA12C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E1BD5B61CFB2960DACC70CD1 /* Project object */;
+}

@@ -1,0 +1,190 @@
+import SwiftUI
+
+enum ScanState {
+    case idle
+    case scanning(ScanProgress)
+    case done(FolderNode)
+    case failed(String)
+}
+
+struct ContentView: View {
+    @State private var scanState: ScanState = .idle
+    @State private var zoomedNode: FolderNode?
+    @State private var scanRootURL: URL?
+    @State private var scanner = FolderScanner()
+    @State private var layoutSettings = LayoutSettings()
+    @State private var showAbout = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            toolbar
+            Divider()
+            headerLine
+            content
+        }
+        .frame(minWidth: 700, minHeight: 500, maxHeight: .infinity, alignment: .top)
+        .sheet(isPresented: $showAbout) { AboutView() }
+    }
+
+    /// Icon-and-label buttons mirroring the original's toolbar: Open,
+    /// Reload, Zoom Full, Free Space (toggle), and About. "Zoom In/Out" and
+    /// "Run or Open" from the original aren't included — click-to-zoom
+    /// already covers granular zooming, and launching arbitrary files from
+    /// a disk-usage tool isn't a core feature worth the extra surface area.
+    @ViewBuilder
+    private var toolbar: some View {
+        HStack(spacing: 4) {
+            toolbarButton("Open", systemImage: "folder") { pickFolder() }
+            toolbarButton("Reload", systemImage: "arrow.clockwise", disabled: scanRootURL == nil) {
+                if let url = scanRootURL { startScan(url: url) }
+            }
+            toolbarButton("Zoom Full", systemImage: "arrow.up.left.and.arrow.down.right",
+                          disabled: rootNode == nil || zoomedNode === rootNode) {
+                if let root = rootNode { zoomedNode = root }
+            }
+            Divider().frame(height: 20)
+            toolbarButton("Free Space", systemImage: layoutSettings.showFreeSpace ? "checkmark.square" : "square") {
+                layoutSettings.showFreeSpace.toggle()
+            }
+            Divider().frame(height: 20)
+            toolbarButton("About", systemImage: "info.circle") { showAbout = true }
+            Spacer()
+        }
+        .padding(6)
+    }
+
+    private func toolbarButton(_ title: String, systemImage: String, disabled: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 2) {
+                Image(systemName: systemImage).font(.system(size: 15))
+                Text(title).font(.system(size: 9))
+            }
+            .frame(width: 56, height: 36)
+        }
+        .buttonStyle(.bordered)
+        .disabled(disabled)
+    }
+
+    private var rootNode: FolderNode? {
+        if case .done(let root) = scanState { return root }
+        return nil
+    }
+
+    @ViewBuilder
+    private var headerLine: some View {
+        if let root = rootNode, let url = scanRootURL {
+            HStack(spacing: 6) {
+                Button {
+                    if let zoomed = zoomedNode, zoomed !== root {
+                        zoomedNode = zoomed.parent ?? root
+                    }
+                } label: {
+                    Image(systemName: "chevron.up")
+                }
+                .buttonStyle(.borderless)
+                .disabled(zoomedNode === root)
+
+                Text(url.path)
+                Text("—")
+                if let total = FolderScanner.totalSpace(at: url) {
+                    Text("\(ByteFormatter.string(from: total)) Total")
+                }
+                if let free = FolderScanner.freeSpace(at: url) {
+                    Text("\(ByteFormatter.string(from: free)) Free")
+                }
+                Spacer()
+            }
+            .font(.system(size: 11))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Color(nsColor: .underPageBackgroundColor))
+            Divider()
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch scanState {
+        case .idle:
+            ContentUnavailableView("No Folder Scanned",
+                systemImage: "internaldrive",
+                description: Text("Choose a folder or volume to visualize its disk usage."))
+        case .scanning(let progress):
+            VStack(spacing: 12) {
+                ProgressView()
+                Text(progress.currentPath).font(.caption).lineLimit(1).truncationMode(.middle)
+                Text("\(progress.filesFound) files, \(progress.foldersFound) folders")
+                    .font(.caption).foregroundStyle(.secondary)
+                Button("Cancel") { scanner.cancel() }
+            }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        case .done(let root):
+            if let zoomed = zoomedNode, let rootURL = scanRootURL {
+                TreemapView(root: root, rootURL: rootURL, zoomedNode: Binding(
+                    get: { zoomed },
+                    set: { zoomedNode = $0 }
+                ), settings: $layoutSettings)
+            }
+        case .failed(let message):
+            ContentUnavailableView("Scan Failed", systemImage: "exclamationmark.triangle", description: Text(message))
+        }
+    }
+
+    private func pickFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Scan"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        startScan(url: url)
+    }
+
+    private func startScan(url: URL) {
+        scanState = .scanning(ScanProgress(currentPath: url.path, filesFound: 0, foldersFound: 0))
+        let localScanner = scanner
+
+        Task.detached(priority: .userInitiated) {
+            do {
+                let root = try localScanner.scan(url: url) { progress in
+                    Task { @MainActor in
+                        if case .scanning = scanState {
+                            scanState = .scanning(progress)
+                        }
+                    }
+                }
+                FolderScanner.addFreeSpaceMarker(to: root, volumeURL: url)
+                root.finalize()
+                await MainActor.run {
+                    scanState = .done(root)
+                    zoomedNode = root
+                    scanRootURL = url
+                }
+            } catch is ScanError {
+                await MainActor.run { scanState = .idle }
+            } catch {
+                await MainActor.run { scanState = .failed(error.localizedDescription) }
+            }
+        }
+    }
+}
+
+private struct AboutView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "square.grid.3x3.square")
+                .font(.system(size: 40))
+            Text("Spacemonger-Mac").font(.title2).bold()
+            Text("A Mac port of the disk-usage treemap concept from SpaceMonger 1.4 (seanofw/spacemonger1), reimplemented natively in Swift/SwiftUI.")
+                .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
+                .frame(width: 280)
+            Button("Close") { dismiss() }
+        }
+        .padding(24)
+    }
+}

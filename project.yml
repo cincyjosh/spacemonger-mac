@@ -1,0 +1,23 @@
+name: Spacemonger-Mac
+options:
+  bundleIdPrefix: com.spacemonger-mac
+  deploymentTarget:
+    macOS: "14.0"
+targets:
+  SpaceMonger:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/SpaceMonger
+    settings:
+      base:
+        PRODUCT_NAME: Spacemonger-Mac
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Sources/SpaceMonger/Info.plist
+      properties:
+        CFBundleDisplayName: Spacemonger-Mac
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: "Mac port of the disk-usage visualizer concept from SpaceMonger 1 (seanofw/spacemonger1)"
