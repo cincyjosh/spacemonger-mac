@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */; };
+		4B2E1F900E31F5EC2D886839 /* PathContainmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8969247E7B75AD9547C1237 /* PathContainmentTests.swift */; };
 		5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */; };
 		746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */; };
 		9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */; };
 		90F886BC349E266DFADB9A58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0AAAFC90A538F885B2C648E8 /* Assets.xcassets */; };
 		951199D83021E7764D0300BA /* FolderNodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */; };
 		9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A009A4B5D3503CC691F026 /* FolderNode.swift */; };
+		DD42EBFC8BEFF8B85A813B38 /* PathContainment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28ECE61EE891972CE0E66229 /* PathContainment.swift */; };
 		E7161AC4CC58E300F2F6738D /* TreemapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */; };
 		E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E43869A6AF322373E7B2CBB /* TreemapView.swift */; };
 		E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */; };
@@ -32,6 +34,7 @@
 /* Begin PBXFileReference section */
 		0AAAFC90A538F885B2C648E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E43869A6AF322373E7B2CBB /* TreemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapView.swift; sourceTree = "<group>"; };
+		28ECE61EE891972CE0E66229 /* PathContainment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathContainment.swift; sourceTree = "<group>"; };
 		2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxColors.swift; sourceTree = "<group>"; };
 		406FE875F5E6834F9376CBD3 /* SpaceMongerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceMongerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -42,6 +45,7 @@
 		BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderNodeTests.swift; sourceTree = "<group>"; };
 		C06DC98C71F9D97E68401252 /* SpaceMonger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceMonger.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayoutTests.swift; sourceTree = "<group>"; };
+		C8969247E7B75AD9547C1237 /* PathContainmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathContainmentTests.swift; sourceTree = "<group>"; };
 		F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayout.swift; sourceTree = "<group>"; };
 		F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -56,6 +60,7 @@
 				B0A009A4B5D3503CC691F026 /* FolderNode.swift */,
 				F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */,
 				8890BB31A35B1D5386242766 /* Info.plist */,
+				28ECE61EE891972CE0E66229 /* PathContainment.swift */,
 				B562457784E06A3ADA4062F4 /* SpaceMonger.entitlements */,
 				7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */,
 				F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */,
@@ -69,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */,
+				C8969247E7B75AD9547C1237 /* PathContainmentTests.swift */,
 				C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */,
 			);
 			name = SpaceMongerTests;
@@ -186,6 +192,7 @@
 				5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */,
 				9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */,
 				1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */,
+				DD42EBFC8BEFF8B85A813B38 /* PathContainment.swift in Sources */,
 				E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */,
 				9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */,
 				E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */,
@@ -197,6 +204,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				951199D83021E7764D0300BA /* FolderNodeTests.swift in Sources */,
+				4B2E1F900E31F5EC2D886839 /* PathContainmentTests.swift in Sources */,
 				E7161AC4CC58E300F2F6738D /* TreemapLayoutTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

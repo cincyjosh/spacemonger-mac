@@ -171,25 +171,35 @@ struct TreemapView: View {
         // Same type isn't enough — a directory can be swapped for a
         // different directory of the same name without changing type or
         // (necessarily) size. Compare the (device, inode) pair captured at
-        // scan time against what's actually at this path right now.
-        if let expectedDevice = node.deviceID, let expectedInode = node.inode {
-            guard let currentIdentity = identity(at: url),
-                  currentIdentity == (expectedDevice, expectedInode) else {
-                return "\(node.name) has been replaced since it was scanned. Rescan and try again."
+        // scan time against what's actually at this path right now. Fails
+        // closed: if identity capture failed during the scan (a narrow race
+        // where the entry vanished between the resource-value lookup and
+        // lstat, then something else appeared at that path before this scan
+        // finished), there's nothing to verify against, so refuse rather
+        // than silently skip the check.
+        guard let expectedDevice = node.deviceID, let expectedInode = node.inode else {
+            return "\(node.name) couldn’t be safely identified when it was scanned. Rescan and try again."
+        }
+        guard let currentIdentity = identity(at: url), currentIdentity == (expectedDevice, expectedInode) else {
+            return "\(node.name) has been replaced since it was scanned. Rescan and try again."
+        }
+
+        // The scanned root itself could have been replaced wholesale (e.g.
+        // the folder was deleted and a new one created at the same path) —
+        // check its identity too, not just the target's.
+        if let expectedRootDevice = root.deviceID, let expectedRootInode = root.inode {
+            guard let currentRootIdentity = identity(at: rootURL),
+                  currentRootIdentity == (expectedRootDevice, expectedRootInode) else {
+                return "The scanned folder itself has changed. Rescan and try again."
             }
         }
 
         // Resolve away any symlinked ancestor directories and confirm the
         // real path is still inside the scanned root, not somewhere a
-        // swapped-out ancestor could have redirected it to. Compared by
-        // path components, not string-prefix — at the volume root ("/"),
-        // concatenating "/" produces "//" and every real child path fails
-        // a naive `hasPrefix` check.
+        // swapped-out ancestor could have redirected it to.
         let resolvedTarget = url.resolvingSymlinksInPath().standardizedFileURL
         let resolvedRoot = rootURL.resolvingSymlinksInPath().standardizedFileURL
-        let targetComponents = resolvedTarget.pathComponents
-        let rootComponents = resolvedRoot.pathComponents
-        guard targetComponents.starts(with: rootComponents) else {
+        guard PathContainment.isContained(resolvedTarget.pathComponents, within: resolvedRoot.pathComponents) else {
             return "\(node.name) is no longer inside the scanned folder. Rescan and try again."
         }
 
