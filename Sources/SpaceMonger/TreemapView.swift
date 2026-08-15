@@ -1,5 +1,4 @@
 import SwiftUI
-import Darwin
 
 /// Renders the treemap for `root` and handles click-to-zoom, mirroring the
 /// original's double-click-to-zoom-in / right-click-to-zoom-out behavior
@@ -118,111 +117,46 @@ struct TreemapView: View {
         return url
     }
 
-    /// Moves the node's underlying file/folder to the Trash — the Mac
-    /// equivalent of the original's SHFileOperation(FO_DELETE, FOF_ALLOWUNDO),
-    /// which sent deletions to the Recycle Bin rather than deleting outright.
-    /// The actual move happens off the main actor: for a large folder or a
-    /// slow volume (external disk, network share), `trashItem` can take long
-    /// enough to freeze the UI if run synchronously on a button action.
-    /// Validation stays synchronous — it's just metadata lookups (`lstat`,
-    /// resource values), fast enough not to matter, and needs to run before
-    /// the confirmation dialog's answer is acted on regardless.
+    /// Moves the node's underlying file/folder to the Trash. Validation and
+    /// the actual move both happen together on a background task
+    /// (`DeletionValidator.validateAndTrash`), back-to-back with no gap
+    /// between them — checking on the main actor first and only trashing
+    /// afterward would leave a window where the target could change between
+    /// the two steps. Only a plain Sendable `DeletionRequest` crosses into
+    /// the detached task, never `item`/`node` themselves (a `FolderNode`
+    /// isn't Sendable, and reading it from a background task while it could
+    /// in principle be touched from the main actor is exactly the kind of
+    /// thing the Swift 6 concurrency checker exists to catch) — the tree is
+    /// only ever mutated back on the main actor, after the background work
+    /// finishes.
     private func delete(_ item: DisplayRect) {
-        let url = fileURL(for: item.node)
-        if let reason = validationFailureReason(for: item.node, at: url) {
-            deleteError = reason
-            return
-        }
-        Task.detached(priority: .userInitiated) {
+        let node = item.node
+        let request = DeletionRequest(
+            targetURL: fileURL(for: node),
+            targetName: node.name,
+            targetIsDirectory: node.isDirectory,
+            targetDeviceID: node.deviceID,
+            targetInode: node.inode,
+            rootURL: rootURL,
+            rootDeviceID: root.deviceID,
+            rootInode: root.inode
+        )
+
+        Task { @MainActor in
             do {
-                try FileManager.default.trashItem(at: url, resultingItemURL: nil)
-                await MainActor.run {
-                    item.node.removeFromParent()
-                    if zoomedNode === item.node {
-                        zoomedNode = item.node.parent ?? root
-                    }
-                    refreshTick += 1
+                try await Task.detached(priority: .userInitiated) {
+                    try DeletionValidator.validateAndTrash(request)
+                }.value
+                node.removeFromParent()
+                if zoomedNode === node {
+                    zoomedNode = node.parent ?? root
                 }
+                refreshTick += 1
+            } catch let refused as DeletionRefused {
+                deleteError = refused.message
             } catch {
-                await MainActor.run {
-                    deleteError = error.localizedDescription
-                }
+                deleteError = error.localizedDescription
             }
-        }
-    }
-
-    /// Verifies the on-disk object still matches what was scanned, and that
-    /// deleting it can't reach outside the scanned root. Time passes between
-    /// scanning and clicking Delete — something could have been renamed,
-    /// replaced with a symlink, or swapped out from under an ancestor path
-    /// component in the meantime. Returns a user-facing reason the delete
-    /// should be refused, or nil if it's safe to proceed.
-    private func validationFailureReason(for node: FolderNode, at url: URL) -> String? {
-        // Reject if the leaf itself is now a symlink — trashing it could
-        // silently follow the link to somewhere never actually scanned.
-        // Checked with lstat (not `.isSymbolicLinkKey`, which some resource
-        // value lookups can resolve through) so the symlink itself is what's
-        // inspected, not whatever it points to.
-        var linkStat = stat()
-        let isSymlink = url.withUnsafeFileSystemRepresentation { rep -> Bool in
-            guard let rep, lstat(rep, &linkStat) == 0 else { return false }
-            return (linkStat.st_mode & S_IFMT) == S_IFLNK
-        }
-        if isSymlink {
-            return "\(node.name) has changed since it was scanned (it's now a symbolic link). Rescan and try again."
-        }
-
-        guard let values = try? url.resourceValues(forKeys: [.isDirectoryKey]),
-              let isDirectory = values.isDirectory else {
-            return "\(node.name) no longer exists at that location. Rescan and try again."
-        }
-        if isDirectory != node.isDirectory {
-            return "\(node.name) has changed since it was scanned. Rescan and try again."
-        }
-
-        // Same type isn't enough — a directory can be swapped for a
-        // different directory of the same name without changing type or
-        // (necessarily) size. Compare the (device, inode) pair captured at
-        // scan time against what's actually at this path right now. Fails
-        // closed: if identity capture failed during the scan (a narrow race
-        // where the entry vanished between the resource-value lookup and
-        // lstat, then something else appeared at that path before this scan
-        // finished), there's nothing to verify against, so refuse rather
-        // than silently skip the check.
-        guard let expectedDevice = node.deviceID, let expectedInode = node.inode else {
-            return "\(node.name) couldn’t be safely identified when it was scanned. Rescan and try again."
-        }
-        guard let currentIdentity = identity(at: url), currentIdentity == (expectedDevice, expectedInode) else {
-            return "\(node.name) has been replaced since it was scanned. Rescan and try again."
-        }
-
-        // The scanned root itself could have been replaced wholesale (e.g.
-        // the folder was deleted and a new one created at the same path) —
-        // check its identity too, not just the target's.
-        if let expectedRootDevice = root.deviceID, let expectedRootInode = root.inode {
-            guard let currentRootIdentity = identity(at: rootURL),
-                  currentRootIdentity == (expectedRootDevice, expectedRootInode) else {
-                return "The scanned folder itself has changed. Rescan and try again."
-            }
-        }
-
-        // Resolve away any symlinked ancestor directories and confirm the
-        // real path is still inside the scanned root, not somewhere a
-        // swapped-out ancestor could have redirected it to.
-        let resolvedTarget = url.resolvingSymlinksInPath().standardizedFileURL
-        let resolvedRoot = rootURL.resolvingSymlinksInPath().standardizedFileURL
-        guard PathContainment.isContained(resolvedTarget.pathComponents, within: resolvedRoot.pathComponents) else {
-            return "\(node.name) is no longer inside the scanned folder. Rescan and try again."
-        }
-
-        return nil
-    }
-
-    private func identity(at url: URL) -> (dev_t, ino_t)? {
-        var s = stat()
-        return url.withUnsafeFileSystemRepresentation { rep -> (dev_t, ino_t)? in
-            guard let rep, lstat(rep, &s) == 0 else { return nil }
-            return (s.st_dev, s.st_ino)
         }
     }
 

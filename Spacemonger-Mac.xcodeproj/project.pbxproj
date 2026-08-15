@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		15B07602A90340F734AB6E7B /* DeletionValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CC740DBED7AEFE57CC433A0 /* DeletionValidator.swift */; };
 		1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */; };
 		4B2E1F900E31F5EC2D886839 /* PathContainmentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8969247E7B75AD9547C1237 /* PathContainmentTests.swift */; };
 		5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		0AAAFC90A538F885B2C648E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0CC740DBED7AEFE57CC433A0 /* DeletionValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletionValidator.swift; sourceTree = "<group>"; };
 		0E43869A6AF322373E7B2CBB /* TreemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapView.swift; sourceTree = "<group>"; };
 		28ECE61EE891972CE0E66229 /* PathContainment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathContainment.swift; sourceTree = "<group>"; };
 		2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxColors.swift; sourceTree = "<group>"; };
@@ -57,6 +59,7 @@
 				0AAAFC90A538F885B2C648E8 /* Assets.xcassets */,
 				2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */,
 				4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */,
+				0CC740DBED7AEFE57CC433A0 /* DeletionValidator.swift */,
 				B0A009A4B5D3503CC691F026 /* FolderNode.swift */,
 				F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */,
 				8890BB31A35B1D5386242766 /* Info.plist */,
@@ -190,6 +193,7 @@
 			files = (
 				746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */,
 				5B83228B5CF45FFB11023823 /* ContentView.swift in Sources */,
+				15B07602A90340F734AB6E7B /* DeletionValidator.swift in Sources */,
 				9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */,
 				1B54AEE1AD35BBC53F90A914 /* FolderScanner.swift in Sources */,
 				DD42EBFC8BEFF8B85A813B38 /* PathContainment.swift in Sources */,
