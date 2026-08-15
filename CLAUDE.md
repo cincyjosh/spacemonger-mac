@@ -29,9 +29,21 @@ xcodebuild -project Spacemonger-Mac.xcodeproj -scheme SpaceMonger -configuration
 
 # Open in Xcode to run/debug interactively (⌘R)
 open Spacemonger-Mac.xcodeproj
+
+# Run the unit tests (TreemapLayout + FolderNode pure-logic coverage)
+xcodebuild -project Spacemonger-Mac.xcodeproj -scheme SpaceMonger -configuration Debug test CODE_SIGNING_ALLOWED=NO
 ```
 
-There is no test target and no linter configured in this project.
+The `SpaceMongerTests` target hosts against the app binary (`TEST_HOST`/`BUNDLE_LOADER` point at
+`Spacemonger-Mac.app`, not the target's own name `SpaceMonger` — XcodeGen's default assumes those match,
+which they don't here since `PRODUCT_NAME` overrides the app's name). No linter is configured.
+
+Distribution builds need entitlements applied (App Sandbox — see below), which `CODE_SIGNING_ALLOWED=NO`
+skips. Sign locally with:
+
+```sh
+codesign --force --sign - --entitlements Sources/SpaceMonger/SpaceMonger.entitlements path/to/Spacemonger-Mac.app
+```
 
 The scheme is named `SpaceMonger` (an internal leftover identifier from before the app was renamed to
 Spacemonger-Mac) — use that scheme name in `-scheme` flags regardless of the product/app name.
@@ -66,7 +78,12 @@ follows the actual data pipeline.
   roughly equal total size (they arrive pre-sorted descending by size, so greedy assignment is enough),
   split the rectangle along whichever axis best matches the current aspect ratio (nudged by
   `LayoutSettings.bias`), recurse into each half. `LayoutSettings.minWidth`/`minHeight` control when a
-  box is too small to keep subdividing and becomes a single leaf block instead.
+  box is too small to keep subdividing and becomes a single leaf block instead. The recursive split
+  happens *before* that size check runs on each half, so a too-small box can end up representing more
+  than one sibling at once — `DisplayRect.representedCount`/`representedSize` describe what a box
+  actually stands for (vs. `node`, which is just the largest item in the group), and `isSingleItem`
+  is false whenever a box shouldn't be treated as one identified file/folder (its label becomes "N
+  items", and `TreemapView` won't offer to delete it).
 
 - **`TreemapView.swift`** — Renders the `[DisplayRect]`s onto a single `Canvas`, and owns interaction:
   tap-to-zoom, hover tooltip, right-click → Move to Trash (via `FileManager.trashItem`, i.e. reversible,
@@ -78,9 +95,23 @@ follows the actual data pipeline.
   `refreshTick` is a dummy `@State` bumped after every delete purely to force SwiftUI to recompute
   `rects` on the next render.
 
+  Before actually trashing anything, `validationFailureReason(for:at:)` re-checks the target against
+  what was scanned: rejects if the leaf became a symlink (via `lstat`, not a resource-value lookup that
+  could resolve through it), if its type changed, if its (device, inode) pair captured at scan time no
+  longer matches (catches a same-type same-name replacement, which a type/size check alone can't), and
+  confirms the resolved real path is still a path-component-wise descendant of the scanned root (not a
+  string-prefix check — at the volume root `/`, concatenating `"/"` produces `"//"` and breaks every
+  real child path). Only a box with `representedCount == 1` (`isSingleItem`) offers delete at all — see
+  below.
+
 - **`ContentView.swift`** — App shell: toolbar (Open/Reload/Zoom Full/Free Space toggle/About), the
   path+volume-space header line, and the scan-state switch (`idle` / `scanning` / `done` / `failed`).
-  Owns `zoomedNode` and passes it down to `TreemapView` as a binding.
+  Owns `zoomedNode` and passes it down to `TreemapView` as a binding. Owns the scan itself as a
+  cancellable `Task` plus a `scanGeneration` counter: starting a new scan (Open or Reload) cancels
+  whatever was already running and bumps the generation, and every callback checks its captured
+  generation against the current one before touching `scanState` — without this, a superseded scan's
+  late-arriving completion could clobber a newer scan's results. Each scan gets its own `FolderScanner`
+  instance rather than reusing one across scans.
 
 - **`BoxColors.swift`** — Fixed 8-color palette cycled by depth (`depth % palette.count`), matching the
   original's `BoxColors` table. `TreemapView` colors a folder's own box using `depth + 1` so that the
@@ -99,3 +130,14 @@ follows the actual data pipeline.
   *not* include the volume/root URL. Full filesystem paths are only resolved where needed (e.g.
   `TreemapView.fileURL(for:)` for delete) by joining `rootURL` (kept separately in `ContentView`) with
   `node.path.dropFirst()`.
+- `FolderScanner.crossesVolumeBoundary` fails *closed*: if `stat()` can't establish a directory's
+  device identity at all, it's treated as a boundary and skipped, not silently let through.
+- A directory that can't be enumerated (permission denied, vanished mid-scan) is still treated as
+  empty rather than erroring out the whole scan, but it's counted
+  (`FolderScanner.inaccessibleDirectoryCount`) and surfaced in `ContentView`'s header line — don't
+  drop that count silently if you touch this path, since it's the only signal the user gets that a
+  scan might be incomplete.
+- The app runs under App Sandbox (`Sources/SpaceMonger/SpaceMonger.entitlements`, only
+  `files.user-selected.read-write`) — it can only touch whatever the user picked via the `NSOpenPanel`
+  in `pickFolder()` plus its subtree. Don't add filesystem access outside that flow without adding the
+  matching entitlement.

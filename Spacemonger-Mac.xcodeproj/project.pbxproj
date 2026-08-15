@@ -12,21 +12,36 @@
 		746EE0DAF69C76DB7A97BA83 /* BoxColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */; };
 		9046C628291B1E8CA5573789 /* TreemapLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */; };
 		90F886BC349E266DFADB9A58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0AAAFC90A538F885B2C648E8 /* Assets.xcassets */; };
+		951199D83021E7764D0300BA /* FolderNodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */; };
 		9E01C21F5DA73122680E8991 /* FolderNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A009A4B5D3503CC691F026 /* FolderNode.swift */; };
+		E7161AC4CC58E300F2F6738D /* TreemapLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */; };
 		E91EC97A5847FEA5D63509A0 /* TreemapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E43869A6AF322373E7B2CBB /* TreemapView.swift */; };
 		E9C8308B2474EF9B236F29ED /* SpaceMongerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		75EBEC0A93AE77B89A179244 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E1BD5B61CFB2960DACC70CD1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 489DEAF6583434936B190137;
+			remoteInfo = SpaceMonger;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		0AAAFC90A538F885B2C648E8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0E43869A6AF322373E7B2CBB /* TreemapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapView.swift; sourceTree = "<group>"; };
 		2CF12A4EEF6B4A48201BB2E4 /* BoxColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxColors.swift; sourceTree = "<group>"; };
+		406FE875F5E6834F9376CBD3 /* SpaceMongerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SpaceMongerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EC3968BBC7B40FC6E19FED2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7DE21BC03527914A1F9F9F55 /* SpaceMongerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpaceMongerApp.swift; sourceTree = "<group>"; };
 		8890BB31A35B1D5386242766 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0A009A4B5D3503CC691F026 /* FolderNode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderNode.swift; sourceTree = "<group>"; };
 		B562457784E06A3ADA4062F4 /* SpaceMonger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpaceMonger.entitlements; sourceTree = "<group>"; };
+		BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderNodeTests.swift; sourceTree = "<group>"; };
 		C06DC98C71F9D97E68401252 /* SpaceMonger.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SpaceMonger.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayoutTests.swift; sourceTree = "<group>"; };
 		F4DF66236D0EDA3FA26B514E /* TreemapLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TreemapLayout.swift; sourceTree = "<group>"; };
 		F9C9A30CBB18DE5FCC06AE88 /* FolderScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderScanner.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -50,10 +65,21 @@
 			path = Sources/SpaceMonger;
 			sourceTree = "<group>";
 		};
+		6A2333CA728C2D9C9C3F140A /* SpaceMongerTests */ = {
+			isa = PBXGroup;
+			children = (
+				BD2B2DE89E18BA8A40F0BF51 /* FolderNodeTests.swift */,
+				C0D8AB6482A9EA59F92878F7 /* TreemapLayoutTests.swift */,
+			);
+			name = SpaceMongerTests;
+			path = Tests/SpaceMongerTests;
+			sourceTree = "<group>";
+		};
 		C0FF7039EA3E937BF6E298D2 = {
 			isa = PBXGroup;
 			children = (
 				5E9713A4F6833173B873BF2D /* SpaceMonger */,
+				6A2333CA728C2D9C9C3F140A /* SpaceMongerTests */,
 				E8174B2AA46622195AC41639 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -62,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				C06DC98C71F9D97E68401252 /* SpaceMonger.app */,
+				406FE875F5E6834F9376CBD3 /* SpaceMongerTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -86,6 +113,24 @@
 			productName = SpaceMonger;
 			productReference = C06DC98C71F9D97E68401252 /* SpaceMonger.app */;
 			productType = "com.apple.product-type.application";
+		};
+		5D3BCB0006C3725FD2953814 /* SpaceMongerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4E09BFDF6DB9F036D173BB25 /* Build configuration list for PBXNativeTarget "SpaceMongerTests" */;
+			buildPhases = (
+				898D301871EE38F392A43219 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A479B09342B9866475A3F08C /* PBXTargetDependency */,
+			);
+			name = SpaceMongerTests;
+			packageProductDependencies = (
+			);
+			productName = SpaceMongerTests;
+			productReference = 406FE875F5E6834F9376CBD3 /* SpaceMongerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -116,6 +161,7 @@
 			projectRoot = "";
 			targets = (
 				489DEAF6583434936B190137 /* SpaceMonger */,
+				5D3BCB0006C3725FD2953814 /* SpaceMongerTests */,
 			);
 		};
 /* End PBXProject section */
@@ -146,7 +192,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		898D301871EE38F392A43219 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				951199D83021E7764D0300BA /* FolderNodeTests.swift in Sources */,
+				E7161AC4CC58E300F2F6738D /* TreemapLayoutTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A479B09342B9866475A3F08C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 489DEAF6583434936B190137 /* SpaceMonger */;
+			targetProxy = 75EBEC0A93AE77B89A179244 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		58924367523D7C1DFE6285F1 /* Release */ = {
@@ -166,6 +229,23 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.spacemonger-mac.SpaceMonger";
 				PRODUCT_NAME = "Spacemonger-Mac";
 				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		71A3CC4D5F959817448E65B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.spacemonger-mac.SpaceMongerTests";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Spacemonger-Mac.app/Contents/MacOS/Spacemonger-Mac";
 			};
 			name = Release;
 		};
@@ -308,9 +388,35 @@
 			};
 			name = Release;
 		};
+		E4287412CB02FD3DAB9B0207 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.spacemonger-mac.SpaceMongerTests";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Spacemonger-Mac.app/Contents/MacOS/Spacemonger-Mac";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4E09BFDF6DB9F036D173BB25 /* Build configuration list for PBXNativeTarget "SpaceMongerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E4287412CB02FD3DAB9B0207 /* Debug */,
+				71A3CC4D5F959817448E65B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		8BC0EE827F87ED46FE7D3F9F /* Build configuration list for PBXNativeTarget "SpaceMonger" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

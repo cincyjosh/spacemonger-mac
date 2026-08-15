@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 
-Spacemonger-Mac is a macOS 14+ SwiftUI application. Production code lives in `Sources/SpaceMonger/`. The main data flow is `FolderScanner.swift` (filesystem traversal) → `FolderNode.swift` (in-memory tree) → `TreemapLayout.swift` (rectangle calculation) → `TreemapView.swift` (rendering and interaction). `ContentView.swift` provides the app shell, while `SpaceMongerApp.swift` is the entry point. App metadata is in `Info.plist`. Treat `project.yml` as the XcodeGen source of truth; `Spacemonger-Mac.xcodeproj` is generated and committed. There is currently no test or asset directory.
+Spacemonger-Mac is a macOS 14+ SwiftUI application. Production code lives in `Sources/SpaceMonger/`. The main data flow is `FolderScanner.swift` (filesystem traversal) → `FolderNode.swift` (in-memory tree) → `TreemapLayout.swift` (rectangle calculation) → `TreemapView.swift` (rendering and interaction). `ContentView.swift` provides the app shell, while `SpaceMongerApp.swift` is the entry point. App metadata is in `Info.plist`. `Sources/SpaceMonger/Assets.xcassets` holds the app icon set. `Tests/SpaceMongerTests/` holds the `SpaceMongerTests` unit test target (pure-logic coverage for `TreemapLayout` and `FolderNode`). Treat `project.yml` as the XcodeGen source of truth; `Spacemonger-Mac.xcodeproj` is generated and committed.
 
 ## Build, Test, and Development Commands
 
@@ -19,7 +19,7 @@ Follow existing Swift conventions: four-space indentation, one primary type per 
 
 ## Testing Guidelines
 
-No automated test target or coverage threshold exists yet. Before submitting changes, run the unsigned Debug build and manually exercise folder selection, scan cancellation/progress, treemap zooming, the Free Space toggle, and Move to Trash where relevant. If adding tests, define a test target in `project.yml`, regenerate the project, and name files after the subject, for example `TreemapLayoutTests.swift`.
+Run `xcodebuild -project Spacemonger-Mac.xcodeproj -scheme SpaceMonger -configuration Debug test CODE_SIGNING_ALLOWED=NO` for the `SpaceMongerTests` unit tests (pure-logic coverage only — layout math, tree bookkeeping). There is no coverage threshold, and UI/scanning/deletion behavior still needs manual verification: run the unsigned Debug build and exercise folder selection, scan cancellation/progress, treemap zooming, the Free Space toggle, and Move to Trash where relevant. Add new test files to `Tests/SpaceMongerTests/`, named after the subject, e.g. `TreemapLayoutTests.swift`.
 
 ## Commit & Pull Request Guidelines
 

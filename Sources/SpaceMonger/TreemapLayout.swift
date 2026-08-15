@@ -1,7 +1,11 @@
 import Foundation
 import CoreGraphics
 
-/// A laid-out rectangle for one node, ready to draw.
+/// A laid-out rectangle, ready to draw. Usually represents exactly one
+/// `FolderNode`, but when a box is too small to subdivide further and more
+/// than one sibling landed in it, `node` is just the largest of the group —
+/// `representedCount`/`representedSize` describe what the box actually
+/// stands for, so callers don't mistake it for a single identified item.
 struct DisplayRect: Identifiable {
     let id = UUID()
     let node: FolderNode
@@ -10,6 +14,17 @@ struct DisplayRect: Identifiable {
     /// True if this rect represents a folder header (its children are laid
     /// out inside it); false for a plain file box.
     let isFolder: Bool
+    /// How many sibling nodes this box collapses together. 1 unless the box
+    /// was too small to subdivide and multiple items landed in the same
+    /// leftover block.
+    var representedCount: Int = 1
+    /// Total size of everything this box represents — equals `node.size`
+    /// when `representedCount == 1`.
+    var representedSize: UInt64 = 0
+
+    /// False when this box represents more than one item — deleting it
+    /// would be ambiguous about which underlying file/folder is meant.
+    var isSingleItem: Bool { representedCount == 1 }
 }
 
 /// Controls how "wide" vs "tall" the recursive split favors, and the
@@ -118,13 +133,20 @@ enum TreemapLayout {
 
         guard bigEnough else {
             // Too small to subdivide or even label individually — draw as a
-            // single leftover block for whatever's left in this group.
-            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: false))
+            // single leftover block. If more than one sibling landed here,
+            // the box represents all of them collectively (shown as "N
+            // items" with their combined size), not just the largest one —
+            // otherwise its tooltip and delete target would silently claim
+            // to be a single file/folder it isn't.
+            let total = group.reduce(UInt64(0)) { $0 + $1.size }
+            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: false,
+                                        representedCount: group.count, representedSize: total))
             return
         }
 
         if node.isDirectory && !node.children.isEmpty {
-            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: true))
+            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: true,
+                                        representedSize: node.size))
             let inset = settings.childInset
             let innerRect = CGRect(
                 x: rect.minX + inset,
@@ -135,7 +157,8 @@ enum TreemapLayout {
                 buildFolderLayout(rect: innerRect, folder: node, depth: depth + 1, settings: settings, into: &results)
             }
         } else {
-            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: node.isDirectory))
+            results.append(DisplayRect(node: node, depth: depth, rect: rect, isFolder: node.isDirectory,
+                                        representedSize: node.size))
         }
     }
 }

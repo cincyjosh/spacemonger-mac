@@ -23,3 +23,27 @@ targets:
         CFBundleDisplayName: Spacemonger-Mac
         LSApplicationCategoryType: public.app-category.utilities
         NSHumanReadableCopyright: "Mac port of the disk-usage visualizer concept from SpaceMonger 1 (seanofw/spacemonger1)"
+  SpaceMongerTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/SpaceMongerTests
+    settings:
+      base:
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        # XcodeGen defaults TEST_HOST to the app target's *name* (SpaceMonger),
+        # but PRODUCT_NAME overrides the actual built app to Spacemonger-Mac —
+        # override explicitly or the test bundle can't find its host app.
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Spacemonger-Mac.app/Contents/MacOS/Spacemonger-Mac"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+    dependencies:
+      - target: SpaceMonger
+schemes:
+  SpaceMonger:
+    build:
+      targets:
+        SpaceMonger: all
+        SpaceMongerTests: [test]
+    test:
+      targets:
+        - SpaceMongerTests

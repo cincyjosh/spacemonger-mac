@@ -55,6 +55,12 @@ final class FolderScanner: @unchecked Sendable {
     /// the Mac equivalent, since mounts here don't get their own drive
     /// letter, they just appear as an ordinary-looking subfolder.
     private var rootDeviceID: dev_t?
+    /// Count of directories that couldn't be enumerated (permission denied,
+    /// vanished mid-scan, etc.) and were silently treated as empty. Exposed
+    /// so the UI can tell the user the scan may be incomplete, rather than
+    /// presenting a folder that came up empty as if that were its real
+    /// contents.
+    private(set) var inaccessibleDirectoryCount = 0
 
     func cancel() {
         isCancelled = true
@@ -70,11 +76,14 @@ final class FolderScanner: @unchecked Sendable {
         filesFound = 0
         foldersFound = 0
         isCancelled = false
+        inaccessibleDirectoryCount = 0
         rootDeviceID = deviceID(for: url)
+        let rootIdentity = lstatIdentity(for: url)
 
         let blockSize = allocationBlockSize(for: url)
         let root = FolderNode(name: url.lastPathComponent.isEmpty ? url.path : url.lastPathComponent,
-                               size: 0, isDirectory: true)
+                               size: 0, isDirectory: true,
+                               deviceID: rootIdentity?.0, inode: rootIdentity?.1)
         try scanDirectory(url: url, into: root, blockSize: blockSize, onProgress: onProgress)
         return root
     }
@@ -101,6 +110,19 @@ final class FolderScanner: @unchecked Sendable {
         return url.withUnsafeFileSystemRepresentation { rep -> dev_t? in
             guard let rep, stat(rep, &s) == 0 else { return nil }
             return s.st_dev
+        }
+    }
+
+    /// Captures the (device, inode) pair identifying this exact filesystem
+    /// object right now, via `lstat` (so a symlink is identified as itself,
+    /// not as whatever it points to). Stored on the `FolderNode` so a delete
+    /// later can confirm it's still removing the same object it scanned,
+    /// not something else of the same name/type that replaced it.
+    private func lstatIdentity(for url: URL) -> (dev_t, ino_t)? {
+        var s = stat()
+        return url.withUnsafeFileSystemRepresentation { rep -> (dev_t, ino_t)? in
+            guard let rep, lstat(rep, &s) == 0 else { return nil }
+            return (s.st_dev, s.st_ino)
         }
     }
 
@@ -133,8 +155,12 @@ final class FolderScanner: @unchecked Sendable {
             contents = try fileManager.contentsOfDirectory(
                 at: url, includingPropertiesForKeys: resourceKeys, options: [])
         } catch {
-            // Permission-denied or vanished directory: treat as empty, same
-            // as the original silently skipping entries it can't enumerate.
+            // Permission-denied or vanished directory: treated as empty,
+            // same as the original silently skipping entries it can't
+            // enumerate — but counted, so the UI can flag the scan as
+            // possibly incomplete instead of presenting this as the folder's
+            // real (empty) contents.
+            inaccessibleDirectoryCount += 1
             return
         }
 
@@ -154,17 +180,21 @@ final class FolderScanner: @unchecked Sendable {
                 // would scan someone else's filesystem, not local disk.
                 if crossesVolumeBoundary(childURL) || hasNoFollowMarker(childURL) { continue }
 
+                let identity = lstatIdentity(for: childURL)
                 foldersFound += 1
                 let child = FolderNode(name: childURL.lastPathComponent, size: 0, isDirectory: true,
-                                        modificationDate: values.contentModificationDate)
+                                        modificationDate: values.contentModificationDate,
+                                        deviceID: identity?.0, inode: identity?.1)
                 try scanDirectory(url: childURL, into: child, blockSize: blockSize, onProgress: onProgress)
                 node.addChild(child)
             } else {
+                let identity = lstatIdentity(for: childURL)
                 filesFound += 1
                 let rawSize = UInt64(values.fileSize ?? 0)
                 let roundedSize = roundUp(rawSize, to: blockSize)
                 let child = FolderNode(name: childURL.lastPathComponent, size: roundedSize, isDirectory: false,
-                                        modificationDate: values.contentModificationDate)
+                                        modificationDate: values.contentModificationDate,
+                                        deviceID: identity?.0, inode: identity?.1)
                 node.addChild(child)
             }
 

@@ -61,7 +61,10 @@ struct TreemapView: View {
                     }
                 }
                 .contextMenu {
-                    if let target = hoveredRect, !target.node.isFreeSpaceMarker {
+                    // Only offered for a box that identifies exactly one
+                    // item — a collapsed multi-item box has no single
+                    // unambiguous delete target.
+                    if let target = hoveredRect, target.isSingleItem, !target.node.isFreeSpaceMarker {
                         Button(role: .destructive) {
                             pendingDelete = target
                         } label: {
@@ -165,16 +168,40 @@ struct TreemapView: View {
             return "\(node.name) has changed since it was scanned. Rescan and try again."
         }
 
+        // Same type isn't enough — a directory can be swapped for a
+        // different directory of the same name without changing type or
+        // (necessarily) size. Compare the (device, inode) pair captured at
+        // scan time against what's actually at this path right now.
+        if let expectedDevice = node.deviceID, let expectedInode = node.inode {
+            guard let currentIdentity = identity(at: url),
+                  currentIdentity == (expectedDevice, expectedInode) else {
+                return "\(node.name) has been replaced since it was scanned. Rescan and try again."
+            }
+        }
+
         // Resolve away any symlinked ancestor directories and confirm the
         // real path is still inside the scanned root, not somewhere a
-        // swapped-out ancestor could have redirected it to.
-        let resolvedTarget = url.resolvingSymlinksInPath().standardizedFileURL.path
-        let resolvedRoot = rootURL.resolvingSymlinksInPath().standardizedFileURL.path
-        guard resolvedTarget == resolvedRoot || resolvedTarget.hasPrefix(resolvedRoot + "/") else {
+        // swapped-out ancestor could have redirected it to. Compared by
+        // path components, not string-prefix — at the volume root ("/"),
+        // concatenating "/" produces "//" and every real child path fails
+        // a naive `hasPrefix` check.
+        let resolvedTarget = url.resolvingSymlinksInPath().standardizedFileURL
+        let resolvedRoot = rootURL.resolvingSymlinksInPath().standardizedFileURL
+        let targetComponents = resolvedTarget.pathComponents
+        let rootComponents = resolvedRoot.pathComponents
+        guard targetComponents.starts(with: rootComponents) else {
             return "\(node.name) is no longer inside the scanned folder. Rescan and try again."
         }
 
         return nil
+    }
+
+    private func identity(at url: URL) -> (dev_t, ino_t)? {
+        var s = stat()
+        return url.withUnsafeFileSystemRepresentation { rep -> (dev_t, ino_t)? in
+            guard let rep, lstat(rep, &s) == 0 else { return nil }
+            return (s.st_dev, s.st_ino)
+        }
     }
 
     /// Colors cycle starting one step past the header bar's red, so a
@@ -197,23 +224,30 @@ struct TreemapView: View {
             rule.addLine(to: CGPoint(x: item.rect.maxX, y: titleBottom))
             context.stroke(rule, with: .color(.black.opacity(0.5)), lineWidth: 0.5)
 
-            let text = Text(item.node.name).font(.system(size: 9)).foregroundColor(.black.opacity(0.8))
+            let text = Text(label(for: item)).font(.system(size: 9)).foregroundColor(.black.opacity(0.8))
             context.draw(context.resolve(text),
                          at: CGPoint(x: item.rect.minX + 3, y: item.rect.minY + settings.titleBarHeight / 2),
                          anchor: .leading)
         } else if item.rect.width > 26 && item.rect.height > 12 {
-            let text = Text(item.node.name).font(.system(size: 9)).foregroundColor(.black.opacity(0.7))
+            let text = Text(label(for: item)).font(.system(size: 9)).foregroundColor(.black.opacity(0.7))
             context.draw(context.resolve(text), at: CGPoint(x: item.rect.minX + 2, y: item.rect.minY + 1), anchor: .topLeading)
         }
+    }
+
+    /// A collapsed multi-item box is labeled by count, not by whichever
+    /// node happens to be first in the group — that node isn't what the box
+    /// actually represents.
+    private func label(for item: DisplayRect) -> String {
+        item.isSingleItem ? item.node.name : "\(item.representedCount) items"
     }
 
     /// Small, flat, pale-yellow tooltip — matches the original's compact
     /// info popup rather than a heavyweight blurred/shadowed card.
     private func tooltip(for item: DisplayRect) -> some View {
         VStack(alignment: .leading, spacing: 1) {
-            Text(item.node.name).font(.system(size: 10, weight: .semibold))
-            Text(ByteFormatter.exactString(from: item.node.size)).font(.system(size: 9))
-            if let date = item.node.modificationDate {
+            Text(label(for: item)).font(.system(size: 10, weight: .semibold))
+            Text(ByteFormatter.exactString(from: item.representedSize)).font(.system(size: 9))
+            if item.isSingleItem, let date = item.node.modificationDate {
                 Text(date.formatted(date: .abbreviated, time: .standard))
                     .font(.system(size: 9))
                     .foregroundStyle(.secondary)

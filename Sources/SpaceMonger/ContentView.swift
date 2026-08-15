@@ -3,7 +3,11 @@ import SwiftUI
 enum ScanState {
     case idle
     case scanning(ScanProgress)
-    case done(FolderNode)
+    /// `inaccessibleDirectoryCount`: how many directories couldn't be read
+    /// (permission denied, vanished mid-scan) and were silently counted as
+    /// empty rather than skipped entirely — surfaced so the treemap isn't
+    /// mistaken for a complete picture of disk usage.
+    case done(FolderNode, inaccessibleDirectoryCount: Int)
     case failed(String)
 }
 
@@ -76,8 +80,13 @@ struct ContentView: View {
     }
 
     private var rootNode: FolderNode? {
-        if case .done(let root) = scanState { return root }
+        if case .done(let root, _) = scanState { return root }
         return nil
+    }
+
+    private var inaccessibleDirectoryCount: Int {
+        if case .done(_, let count) = scanState { return count }
+        return 0
     }
 
     @ViewBuilder
@@ -101,6 +110,11 @@ struct ContentView: View {
                 }
                 if let free = FolderScanner.freeSpace(at: url) {
                     Text("\(ByteFormatter.string(from: free)) Free")
+                }
+                if inaccessibleDirectoryCount > 0 {
+                    Label("\(inaccessibleDirectoryCount) folders couldn’t be read — scan may be incomplete",
+                          systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
                 }
                 Spacer()
             }
@@ -130,7 +144,7 @@ struct ContentView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        case .done(let root):
+        case .done(let root, _):
             if let zoomed = zoomedNode, let rootURL = scanRootURL {
                 TreemapView(root: root, rootURL: rootURL, zoomedNode: Binding(
                     get: { zoomed },
@@ -178,9 +192,10 @@ struct ContentView: View {
                 }
                 FolderScanner.addFreeSpaceMarker(to: root, volumeURL: url)
                 root.finalize()
+                let inaccessibleCount = newScanner.inaccessibleDirectoryCount
                 await MainActor.run {
                     guard generation == scanGeneration else { return }
-                    scanState = .done(root)
+                    scanState = .done(root, inaccessibleDirectoryCount: inaccessibleCount)
                     zoomedNode = root
                     scanRootURL = url
                     activeScanner = nil

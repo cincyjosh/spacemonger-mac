@@ -1,4 +1,5 @@
 import Foundation
+import Darwin
 
 /// A scanned file or folder in the tree.
 ///
@@ -17,15 +18,26 @@ final class FolderNode {
     weak var parent: FolderNode?
     private(set) var children: [FolderNode] = []
 
+    /// The device and inode number captured (via `lstat`, not following
+    /// symlinks) at scan time. A rename or a same-type replacement (e.g. one
+    /// directory swapped for another directory) doesn't change size/type,
+    /// so those checks alone can't catch it — a mismatched inode can. Not
+    /// available for the synthetic Free Space entry, which has no real path.
+    let deviceID: dev_t?
+    let inode: ino_t?
+
     /// True for the synthetic "Free Space" entry SpaceMonger adds so a
     /// scanned volume's treemap accounts for unused space too.
     let isFreeSpaceMarker: Bool
 
-    init(name: String, size: UInt64, isDirectory: Bool, modificationDate: Date? = nil, isFreeSpaceMarker: Bool = false) {
+    init(name: String, size: UInt64, isDirectory: Bool, modificationDate: Date? = nil,
+         deviceID: dev_t? = nil, inode: ino_t? = nil, isFreeSpaceMarker: Bool = false) {
         self.name = name
         self.size = size
         self.isDirectory = isDirectory
         self.modificationDate = modificationDate
+        self.deviceID = deviceID
+        self.inode = inode
         self.isFreeSpaceMarker = isFreeSpaceMarker
     }
 
